@@ -1,0 +1,302 @@
+name: OneBlock
+version: '2.2.9'
+main: fr.tuto.oneblock.OneBlockPlugin
+api-version: '1.21'
+author: LeGameurPSN_YTB
+# Contributeurs : NelixMC, Evernight
+description: Plugin OneBlock complet avec 9 biomes progressifs, spawners, régénération (dont instantanée), bordure par île, plus de 30 paramètres par île (mobs, pvp, dégâts, construction, etc), boutique à tokens, boutique d'améliorations d'île (/upgrades) et boutique de renaissance (/rebirthshop).
+
+commands:
+  ob:
+    description: Commande principale du OneBlock
+    usage: /ob <start|reset|niveau|stop|agrandir|settings|visit|renaissance|team|kick|ban|unban|permissions|leave|chat|lock|unlock|trust|untrust|menu>
+    aliases: [oneblock]
+  spawn:
+    description: Téléporte au spawn du serveur
+    usage: /spawn
+  is:
+    description: Retourne rapidement sur ton île OneBlock (raccourci de /ob tp), ou /is visit <pseudo>, ou /is lock|unlock
+    usage: /is [visit <pseudo>|lock|unlock]
+    aliases: [island]
+  rebirth:
+    description: Renaît (réinitialise ta progression au niveau 1) une fois "Fin du Monde" atteint. Raccourci de /ob renaissance.
+    usage: /rebirth
+    aliases: [renaissance]
+  top:
+    description: Ouvre le GUI des classements OneBlock (tokens, mobs tués, argent perso, caisse d'île, points de renaissance, renaissances)
+    usage: /top [token|mob|argent|banque|rebirthpoints|rebirths]
+  bankis:
+    description: Gère la caisse d'île (dépôt/retrait d'argent entre ton compte perso et la banque de l'île, et coffre d'objets partagé)
+    usage: /bankis [deposer|retirer <montant>|objets]
+  token:
+    description: Boutique à tokens (ex. débloquer le vol sur l'île). Admin -> /token give|take <pseudo> <montant>
+    usage: /token [shop|buy fly|give|take <pseudo> <montant>]
+  upgrades:
+    description: Boutique des améliorations d'île, achetables avec ton argent (caisse personnelle Vault)
+    usage: /upgrades
+  rebirthshop:
+    description: Boutique de renaissance, achetable avec les points de renaissance gagnés via /rebirth
+    usage: /rebirthshop
+    aliases: [rbshop]
+  istransfer:
+    description: "[ADMIN] Transfère une île OneBlock d'un joueur (ancien pseudo) vers un autre (nouveau pseudo)"
+    usage: /istransfer <ancien_pseudo> <nouveau_pseudo>
+    permission: oneblock.admin
+  afk:
+    description: Ouvre le GUI de tes récompenses de la zone AFK (tokens, argent, clés en attente)
+    usage: /afk
+  cinetest:
+    description: "[TEST] Rejoue la cinématique d'arrivée des nouveaux joueurs, sans écraser une île existante"
+    usage: /cinetest
+  chelp:
+    description: Guide condensé des commandes essentielles pour les nouveaux joueurs (île, équipe, boutiques, kits...)
+    usage: /chelp
+  msg:
+    description: Envoie un message privé à un joueur connecté
+    usage: /msg <joueur> <message>
+    aliases: [tell, w, message, r, reply]
+  sendquestion:
+    description: "[TEST] Envoie immédiatement une question bonus dans le chat, en avance sur le minuteur (réservée à LeGameurPSN_YT)"
+    usage: /sendquestion
+  qtop:
+    description: Affiche le classement des meilleures séries de bonnes réponses aux questions bonus, ainsi que tes propres stats (série actuelle/max, bonnes/mauvaises réponses)
+    usage: /qtop [pseudo]
+  eco:
+    description: "[ADMIN] Gère l'argent d'un joueur (Vault)"
+    usage: /eco <give|take|set> <joueur> <montant>
+    permission: oneblock.admin.eco
+  seebankis:
+    description: "[ADMIN] Consulte/modifie la caisse d'île (objets + argent) d'un joueur"
+    usage: /seebankis <pseudo>
+    aliases: [seebanis]
+    permission: oneblock.admin.bankis
+  obreload:
+    description: Répare ton propre bloc OneBlock (overworld/Nether/End) en le remplaçant par de la terre, sans intervention d'un admin
+    usage: /obreload
+  staffchat:
+    description: "[STAFF] Envoie un message uniquement visible par le staff"
+    usage: /staffchat <message>
+    aliases: [sc]
+    permission: oneblock.staff.chat
+  boost:
+    description: "[STAFF] Offre un boost temporaire (x2 XP ou x2 objets, 10 minutes) à un joueur"
+    usage: /boost give <x2xp|x2item> <joueur>
+    permission: oneblock.staff.boost
+
+softdepend: [Vault, PlaceholderAPI, LuckPerms]
+
+permissions:
+  oneblock.*:
+    description: Toutes les permissions OneBlock (joueur + administration)
+    default: op
+    children:
+      oneblock.use: true
+      oneblock.admin: true
+
+  oneblock.use:
+    description: Autorise l'utilisation de base du OneBlock (accès à /ob)
+    default: true
+    children:
+      oneblock.spawn: true
+      oneblock.start: true
+      oneblock.reset: true
+      oneblock.niveau: true
+      oneblock.tp: true
+      oneblock.agrandir: true
+      oneblock.settings: true
+      oneblock.visit: true
+      oneblock.rebirth: true
+      oneblock.team: true
+      oneblock.team.invite: true
+      oneblock.kick: true
+      oneblock.ban: true
+      oneblock.unban: true
+      oneblock.permissions: true
+      oneblock.leave: true
+      oneblock.chat: true
+      oneblock.lock: true
+      oneblock.trust: true
+      oneblock.menu: true
+      oneblock.top: true
+      oneblock.top.token: true
+      oneblock.top.mob: true
+      oneblock.top.bloc: true
+      oneblock.top.argent: true
+      oneblock.top.banque: true
+      oneblock.top.rebirthpoints: true
+      oneblock.top.rebirths: true
+      oneblock.bankis: true
+      oneblock.bankis.deposer: true
+      oneblock.bankis.retirer: true
+      oneblock.bankis.objets: true
+      oneblock.token: true
+      oneblock.token.shop: true
+      oneblock.token.fly: true
+      oneblock.upgrades: true
+      oneblock.rebirthshop: true
+      oneblock.afk: true
+      oneblock.qtop: true
+
+  oneblock.spawn:
+    description: Autorise l'utilisation de /spawn
+    default: true
+  oneblock.start:
+    description: Autorise la création d'une île avec /ob start
+    default: true
+  oneblock.reset:
+    description: Autorise la réinitialisation de sa propre île avec /ob reset
+    default: true
+  oneblock.niveau:
+    description: Autorise la consultation du niveau de l'île avec /ob niveau
+    default: true
+  oneblock.tp:
+    description: Autorise la téléportation vers son île avec /ob tp (et /is)
+    default: true
+  oneblock.agrandir:
+    description: Autorise l'agrandissement de la bordure d'île avec /ob agrandir
+    default: true
+  oneblock.settings:
+    description: Autorise l'accès aux paramètres d'île avec /ob settings
+    default: true
+  oneblock.visit:
+    description: Autorise la visite de l'île d'un autre joueur avec /ob visit
+    default: true
+  oneblock.rebirth:
+    description: Autorise la renaissance de l'île avec /ob renaissance ou /rebirth
+    default: true
+  oneblock.team:
+    description: Autorise la gestion de base de l'équipe avec /ob team
+    default: true
+  oneblock.team.invite:
+    description: Autorise l'invitation de joueurs dans l'équipe avec /ob team invite
+    default: true
+  oneblock.kick:
+    description: Autorise l'expulsion d'un coéquipier avec /ob kick
+    default: true
+  oneblock.ban:
+    description: Autorise le bannissement d'un joueur de son île avec /ob ban
+    default: true
+  oneblock.ban.bypass:
+    description: Empêche ce joueur d'être banni d'une île avec /ob ban (comme les ops)
+    default: op
+  oneblock.unban:
+    description: Autorise le débannissement d'un joueur avec /ob unban
+    default: true
+  oneblock.permissions:
+    description: Autorise la gestion des droits détaillés de l'équipe avec /ob permissions
+    default: true
+  oneblock.leave:
+    description: Autorise à quitter une île avec /ob leave
+    default: true
+  oneblock.chat:
+    description: Autorise l'utilisation du chat d'équipe avec /ob chat
+    default: true
+  oneblock.lock:
+    description: Autorise le verrouillage/déverrouillage de l'île avec /ob lock et /ob unlock
+    default: true
+  oneblock.trust:
+    description: Autorise la gestion fine des joueurs de confiance avec /ob trust
+    default: true
+  oneblock.menu:
+    description: Autorise l'ouverture du GUI rapide visite/sanction avec /ob menu
+    default: true
+  oneblock.top:
+    description: Autorise l'ouverture du classement général avec /top
+    default: true
+  oneblock.top.token:
+    description: Autorise la consultation du classement des tokens
+    default: true
+  oneblock.top.mob:
+    description: Autorise la consultation du classement des mobs tués
+    default: true
+  oneblock.top.bloc:
+    description: Autorise la consultation du classement de progression de bloc
+    default: true
+  oneblock.top.argent:
+    description: Autorise la consultation du classement de l'argent personnel
+    default: true
+  oneblock.top.banque:
+    description: Autorise la consultation du classement des caisses d'île
+    default: true
+  oneblock.top.rebirthpoints:
+    description: Autorise la consultation du classement des points de renaissance
+    default: true
+  oneblock.top.rebirths:
+    description: Autorise la consultation du classement du nombre de renaissances
+    default: true
+  oneblock.bankis:
+    description: Autorise l'accès de base à la caisse d'île avec /bankis
+    default: true
+  oneblock.bankis.deposer:
+    description: Autorise le dépôt d'argent dans la caisse d'île avec /bankis deposer
+    default: true
+  oneblock.bankis.retirer:
+    description: Autorise le retrait d'argent de la caisse d'île avec /bankis retirer
+    default: true
+  oneblock.bankis.objets:
+    description: Autorise l'ouverture du coffre d'objets partagé de la caisse d'île avec /bankis objets
+    default: true
+  oneblock.token:
+    description: Autorise l'accès de base à la commande /token
+    default: true
+  oneblock.token.shop:
+    description: Autorise l'ouverture de la boutique à tokens avec /token shop
+    default: true
+  oneblock.token.fly:
+    description: Autorise l'achat du vol d'île avec /token buy fly
+    default: true
+  oneblock.upgrades:
+    description: Autorise l'accès à la boutique d'améliorations d'île avec /upgrades
+    default: true
+  oneblock.rebirthshop:
+    description: Autorise l'accès à la boutique de renaissance avec /rebirthshop
+    default: true
+  oneblock.afk:
+    description: Autorise l'accès aux récompenses de la zone AFK avec /afk
+    default: true
+  oneblock.qtop:
+    description: Autorise la consultation du classement des questions bonus avec /qtop
+    default: true
+
+  oneblock.admin:
+    description: Autorise toutes les commandes d'administration OneBlock
+    default: op
+    children:
+      oneblock.admin.istransfer: true
+      oneblock.admin.reset: true
+      oneblock.admin.token: true
+      oneblock.admin.island: true
+      oneblock.admin.bypass.lock: true
+      oneblock.admin.bypass.border: true
+      oneblock.admin.bankis: true
+      oneblock.admin.eco: true
+  oneblock.admin.istransfer:
+    description: "[ADMIN] Autorise le transfert d'île d'un joueur vers un autre avec /istransfer"
+    default: op
+  oneblock.admin.reset:
+    description: "[ADMIN] Autorise la réinitialisation de l'île d'un autre joueur"
+    default: op
+  oneblock.admin.token:
+    description: "[ADMIN] Autorise à donner/retirer des tokens à un joueur avec /token give|take"
+    default: op
+  oneblock.admin.island:
+    description: "[ADMIN] Autorise la modification des données d'île de n'importe quel joueur"
+    default: op
+  oneblock.admin.bypass.lock:
+    description: "[ADMIN] Autorise à ignorer le verrouillage d'île (/ob lock) d'un autre joueur"
+    default: op
+  oneblock.admin.bypass.border:
+    description: "[ADMIN] Autorise à ignorer la bordure d'île d'un autre joueur"
+    default: op
+  oneblock.admin.bankis:
+    description: "[ADMIN] Autorise la consultation/modification de la caisse d'île (objets + argent) d'un joueur avec /seebankis"
+    default: op
+  oneblock.admin.eco:
+    description: "[ADMIN] Autorise à donner/retirer/définir l'argent d'un joueur avec /eco"
+    default: op
+  oneblock.staff.chat:
+    description: "[STAFF] Autorise à voir et écrire dans le chat staff avec /staffchat"
+    default: op
+  oneblock.staff.boost:
+    description: "[STAFF] Autorise à offrir un boost x2 XP / x2 objets à un joueur avec /boost give"
+    default: op
