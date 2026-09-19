@@ -1,0 +1,20 @@
+# ============================================
+#   Configuration de la Boutique à Tokens (token.yml)
+# ============================================
+# Les tokens sont une monnaie à part (différente de l'argent Vault et de la
+# caisse d'île /bankis). Les joueurs n'en gagnent PAS automatiquement : un
+# admin doit leur en donner via &f/token give <pseudo> <montant>&7 (ex: en
+# récompense d'un vote, d'un event, d'un achat en boutique web...).
+# Modifiable à chaud : &f/ob reload&7 (ou redémarrage) recharge ce fichier.
+#
+# Le réglage "fly" (vol sur l'île) est bloqué sur OFF et NE PEUT PAS être
+# activé depuis /ob settings tant qu'il n'a pas été acheté avec des tokens.
+token:
+  # Prix en tokens du vol sur l'île ("Fly IS")
+  fly-cost: 1000
+
+# Messages liés à /token (boutique à tokens)
+token-messages:
+  success: "&a✔ &b{name} &adébloqué !"
+  already-owned: "&7Déjà débloqué."
+  no-tokens: "&cIl te faut &b{cost} tokens &c(tu as &b{balance}&c)."

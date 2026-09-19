@@ -1,0 +1,105 @@
+# ============================================
+#   Configuration de la Renaissance (rebirth.yml)
+# ============================================
+# Ce fichier regroupe tout ce qui concerne la renaissance : le système de
+# prestige (/ob renaissance) ET la boutique de renaissance (/rebirthshop).
+# Modifiable à chaud : &f/ob reload&7 (ou redémarrage) recharge ce fichier.
+
+# ============================================
+#   Renaissance (prestige) : /ob renaissance
+# ============================================
+# Une fois le niveau "Fin du Monde" atteint (dernier niveau, voir la
+# section "levels" de config.yml), le joueur peut "renaître" : sa
+# progression (blocs cassés) est remise à zéro et il repart du niveau 1,
+# mais son nombre de renaissances est conservé et affiché (/ob niveau, /top).
+rebirth:
+  enabled: true
+  # ID du niveau minimum requis pour pouvoir renaître (9 = "Fin du Monde" par défaut)
+  required-level: 9
+  # Argent versé dans la caisse d'île à chaque renaissance (0 = désactivé)
+  money-reward: 1000
+  # Alternative au niveau requis ci-dessus : renaître peut aussi se faire
+  # indépendamment sur le Nether ou l'End de l'île (portail, voir /ob), en
+  # cassant au moins ce nombre de blocs dans cette dimension ET en y ayant
+  # obtenu au moins une fois chaque bloc "plein" du Nether/de l'End. Ne
+  # réinitialise QUE la dimension concernée (Nether ou End), pas l'overworld.
+  nether-end-required-blocks: 1500
+  success-message: "&d&l✦ Renaissance ! &7Tu repars du niveau 1 &8(renaissance n°{count})&7. &a+{reward}$ &7dans la caisse d'île !"
+  requirement-message: "&cTu dois atteindre le niveau &e{required} &c(&f{name}&c) pour pouvoir renaître. Niveau actuel : &e{current}&c."
+  disabled-message: "&cLe système de renaissance est désactivé sur ce serveur."
+
+# ============================================
+#   Boutique de renaissance (points) : /rebirthshop
+# ============================================
+# Chaque utilisation de /rebirth (une fois "Fin du Monde" atteint) rapporte
+# des "points de renaissance" : une monnaie de prestige séparée de l'argent,
+# de la caisse d'île et des tokens. Dépensable ici sur des bonus permanents
+# et puissants, qui persistent bien sûr à travers les renaissances
+# suivantes.
+#
+# Deux types d'articles sont gérés :
+#
+#   1) Améliorations à niveaux (comportement par défaut, comme /upgrades) :
+#      max-level, base-cost, cost-multiplier, bonus-per-level. Le coût du
+#      niveau suivant = base-cost * cost-multiplier^niveau actuel. L'effet
+#      appliqué à chaque niveau = niveau * bonus-per-level.
+#
+#   2) Articles répétables (repeatable: true) : pas de niveau/palier, un
+#      prix fixe (base-cost) et un effet immédiat à chaque achat (ex: un
+#      don d'argent). Achetables autant de fois que voulu tant qu'on a
+#      assez de points.
+#
+# Clés reconnues par le plugin (effet réellement appliqué en jeu) :
+#   - rebirth-reward-boost : augmente (en %) l'argent reçu dans la caisse
+#     d'île à chaque renaissance (en plus du bonus "bank-boost" de /upgrades).
+#   - upgrade-discount : réduit (en %, plafonné à 50%) le prix de toutes
+#     les améliorations achetées avec /upgrades.
+#   - double-break : rend le double de bloc/spawner garanti à CHAQUE casse
+#     du OneBlock (remplace le bonus "loot-boost" qui n'est qu'une chance).
+#   - instant-money (repeatable) : verse immédiatement "amount" dans le
+#     porte-monnaie du joueur (argent Vault) à chaque achat.
+# D'autres clés peuvent être ajoutées ici (elles apparaîtront dans le GUI),
+# mais nécessitent d'ajouter leur effet dans le code (OneBlockManager /
+# GuiListener) pour avoir un impact en jeu.
+rebirth-shop:
+  # Nombre de points de renaissance gagnés à chaque /rebirth réussi
+  points-per-rebirth: 1
+  items:
+    rebirth-reward-boost:
+      name: "Bonus de Renaissance"
+      description: "Augmente l'argent reçu dans la caisse d'île à chaque renaissance."
+      icon: NETHER_STAR
+      max-level: 5
+      base-cost: 3
+      cost-multiplier: 1.5
+      bonus-per-level: 15.0   # % de bonus par niveau (niveau 5 = +75%)
+    upgrade-discount:
+      name: "Remise Améliorations"
+      description: "Réduit le prix de toutes les améliorations achetées avec /upgrades."
+      icon: EMERALD
+      max-level: 5
+      base-cost: 4
+      cost-multiplier: 1.6
+      bonus-per-level: 5.0    # % de réduction par niveau (plafonné à 50%)
+    double-break:
+      name: "Cassage x2 de ton Bloc"
+      description: "Le bloc du OneBlock (ou spawner) est toujours obtenu en double à chaque casse."
+      icon: DIAMOND_PICKAXE
+      max-level: 1
+      base-cost: 3
+      cost-multiplier: 1
+      bonus-per-level: 100.0  # 100% = double garanti dès l'achat (niveau 1)
+    instant-money:
+      name: "5000 Argent"
+      description: "Reçois immédiatement 5000$ sur ton compte."
+      icon: GOLD_INGOT
+      repeatable: true
+      base-cost: 1            # prix en points de renaissance, à chaque achat
+      bonus-per-level: 5000   # montant d'argent versé à chaque achat
+
+# Messages liés à /rebirthshop
+rebirth-shop-messages:
+  success: "&a✔ &d{name} &aest maintenant niveau &e{level}&a."
+  max-level: "&cCette amélioration est déjà au niveau maximum."
+  no-points: "&cIl te faut &d{cost} points de renaissance &c(tu en as &d{balance}&c)."
+  purchased: "&a✔ &d{name} &aacheté ! &7(&a+{amount}$&7)"

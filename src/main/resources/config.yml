@@ -1,0 +1,766 @@
+# ============================================
+#   Configuration du OneBlock
+# ============================================
+
+# Chaque île a désormais SON PROPRE monde dédié (au lieu d'un seul monde
+# partagé où les îles étaient espacées). Le nom du monde d'une île est
+# "{island-world-prefix}{pseudo du joueur}", ex: "is_de_Steve". Chaque monde
+# est créé automatiquement à la première visite du joueur (/ob start),
+# généré 100% VIDE (aucun terrain, aucune caverne, aucune structure, aucun
+# mob naturel) grâce à un générateur de chunks personnalisé. S'il existe déjà
+# sur le disque (redémarrage du serveur...), il est simplement rechargé tel
+# quel plutôt que régénéré.
+# ============================================
+#   Messages divers
+# ============================================
+messages:
+  nether-blocked: "§cLe Nether est désactivé sur ce serveur."
+
+# ============================================
+#   Stack des spawners (ex: spawners EconomyShopGUI)
+# ============================================
+# Quand un joueur pose un spawner directement à côté (les 6 faces, y compris
+# dessus/dessous) d'un spawner déjà posé DU MÊME TYPE de mob (ex: deux
+# spawners Zombie), les deux fusionnent automatiquement en un seul bloc avec
+# un compteur ("Zombie x2", affiché au-dessus du spawner). Casser un spawner
+# stacké ne retire qu'UN SEUL spawner du stack à la fois (le bloc reste en
+# place tant qu'il en reste au moins 1) au lieu de tout casser d'un coup.
+spawner-stacking:
+  enabled: true
+  # Nombre maximum de spawners empilables sur un seul bloc.
+  max-stack: 64
+
+island-world-prefix: "is_de_"
+
+# Coordonnée Y où les îles sont générées (dans leur monde respectif)
+island-y: 100
+
+# ============================================
+#   Spawn du serveur (commande /spawn)
+# ============================================
+# Téléportation vers le spawn principal du serveur, potentiellement dans un
+# autre monde que celui du OneBlock (ex: un monde "lobby").
+server-spawn:
+  world: world
+  x: 63
+  y: 70
+  z: 64
+
+# ============================================
+#   Cinématique d'arrivée (tout nouveau joueur)
+# ============================================
+# Jouée automatiquement à la toute première connexion d'un joueur, AVANT que
+# son île ne soit créée : suite de titres + messages de chat qui l'emmène
+# visiter les points clés du spawn (zone AFK, donjon...), puis lui crée son
+# île OneBlock et l'y téléporte. Testable par un administrateur (ou par
+# LeGameurPSN_YT) avec /cinetest, sans jamais écraser une île déjà existante.
+intro-cinematic:
+  enabled: true
+
+  # Halte 1 : centre du spawn
+  step1:
+    x: 63
+    y: 70
+    z: 64
+    duration-seconds: 5
+    title: "&6Bienvenue sur le serveur !"
+    subtitle: "&eNous allons te donner les endroits clés du spawn"
+    chat: "&6Nous allons te donner les endroits clés du spawn."
+
+  # Halte 2 : zone AFK
+  step2:
+    x: 63
+    y: 67
+    z: 89
+    duration-seconds: 5
+    title: "&bZone AFK"
+    subtitle: "&7Reste ici pour gagner des récompenses automatiquement"
+    chat: "&bVoici la zone AFK : reste ici pour accumuler des récompenses passivement !"
+
+  # Halte 3 : donjon
+  step3:
+    x: 63
+    y: 67
+    z: 30
+    yaw: 180
+    duration-seconds: 12.5
+    title: "&cLe Donjon"
+    subtitle: "&7Affronte les défis et récupère de précieuses récompenses"
+    chat: "&cEt voici le donjon !"
+
+  # Halte finale : retour au milieu du spawn, le temps que l'île se crée
+  final:
+    duration-seconds: 5
+    title: "&aPresque prêt !"
+    subtitle: "&7Création de ton île en cours..."
+    chat: "&aOn te prépare ton île OneBlock, patiente quelques secondes..."
+
+# ============================================
+#   Zone AFK (récompenses automatiques)
+# ============================================
+# Tant qu'un joueur se trouve dans cette zone (peu importe s'il bouge ou
+# non), il ACCUMULE automatiquement des récompenses toutes les
+# "interval-seconds" secondes : aucune commande requise pour les gagner.
+# Elles ne sont PAS données instantanément : le joueur doit ensuite les
+# récupérer via &f/afk &7(GUI avec bouton "Récupérer"). Zone définie par
+# 2 coins opposés (comme une bordure), dans le monde "world" ci-dessous.
+afk-zone:
+  enabled: true
+  world: world
+  corner1: { x: 66, y: 64, z: 93 }
+  corner2: { x: 59, y: 65, z: 105 }
+  # Hauteur de la zone au-dessus du sol (couvre le joueur qui se tient dessus)
+  height: 3
+  # Intervalle entre deux accumulations de récompenses (en secondes)
+  interval-seconds: 300
+  # Message envoyé à chaque accumulation (placeholders : {tokens} {money} {key})
+  reward-message: "&b✦ Zone AFK &7- &a+{tokens} tokens&7, &a+{money}$&7, &f{key} &7en attente. Tape &f/afk &7pour les récupérer !"
+  # Active/désactive le message dans le chat ci-dessus
+  chat-message-enabled: true
+  # Title affiché au centre de l'écran à chaque accumulation (en plus du chat)
+  title-enabled: true
+  title-text: "&b✦ Zone AFK"
+  subtitle-text: "&a+{tokens} tokens &7- &a+{money}$ &7- &f{key}"
+  # Title affiché en boucle toutes les X secondes tant que le joueur est dans
+  # la zone AFK, indiquant le temps restant avant la prochaine récompense
+  timer-title-enabled: true
+  timer-title-interval-seconds: 5
+  timer-title-text: "&b✦ Zone AFK"
+  timer-subtitle-text: "&7Prochaine récompense dans &f{time}"
+  # Tokens accumulés (crédités sur la caisse à tokens de l'île du joueur au moment de la récupération, /token)
+  tokens:
+    min: 1
+    max: 12
+  # Argent accumulé (crédité sur le compte perso Vault du joueur au moment de la récupération)
+  money:
+    min: 1
+    max: 125
+  # Commande exécutée EN CONSOLE pour donner une clé au joueur au moment où
+  # il récupère ses récompenses (/afk -> bouton récupérer). {player} est
+  # remplacé par le pseudo du joueur, {type} par le "ecrates-type" de la clé
+  # gagnée (voir ci-dessous). Exécutée une fois par clé gagnée.
+  ecrates-command: "ecrates key give {player} {type}"
+  # Clé gagnée à chaque accumulation, tirée au sort selon "chance" ci-dessous
+  # (exprimé en %, doit totaliser 100).
+  # - "material" : item utilisé UNIQUEMENT pour l'icône dans le GUI /afk
+  #   (aucun item n'est réellement donné au joueur).
+  # - "ecrates-type" : type de clé envoyé à la commande /ecrates key give
+  #   (voir "ecrates-command" ci-dessus).
+  keys:
+    commune:
+      chance: 70
+      display-name: "&fClé Commune"
+      material: TRIPWIRE_HOOK
+      ecrates-type: common
+    magique:
+      chance: 20
+      display-name: "&dClé Magique"
+      material: TRIPWIRE_HOOK
+      ecrates-type: magical
+    legendaire:
+      chance: 7
+      display-name: "&6Clé Légendaire"
+      material: TRIPWIRE_HOOK
+      ecrates-type: legendary
+    ob:
+      chance: 3
+      display-name: "&bClé OB"
+      material: TRIPWIRE_HOOK
+      ecrates-type: oneblock
+
+# ============================================
+#   Nettoyage du terrain à la création de l'île
+# ============================================
+# Chaque monde d'île (island-world-prefix ci-dessus) est déjà 100% vide, donc
+# ce nettoyage est désactivé par défaut (inutile, il ne ferait que ralentir
+# la création des îles). Ne l'active que si tu veux quand même nettoyer la
+# zone (par précaution) : dans ce cas, cette option supprime (AIR) tout ce
+# qu'il y a dans la zone avant de poser le bedrock + le bloc de départ, pour
+# obtenir un vrai "vide" comme dans un OneBlock classique.
+island-clear:
+  enabled: false
+  # Rayon nettoyé autour du centre de l'île (en blocs). Conseillé : la moitié
+  # de border.default-size, pour nettoyer exactement la zone jouable.
+  radius: 25
+  # Si activé (recommandé) : le nettoyage descend jusqu'au fond du monde
+  # (vide/void compris), pour un vrai à-pic sous l'île, comme un OneBlock
+  # classique. Si désactivé, seul "height-below" ci-dessous est utilisé.
+  clear-to-void: true
+  # Hauteur nettoyée sous island-y, UNIQUEMENT si clear-to-void: false
+  height-below: 15
+  # Hauteur nettoyée au-dessus d'island-y (arbres, montagnes...)
+  height-above: 40
+
+# Le bloc réapparaît TOUJOURS instantanément après avoir été cassé (aucun
+# délai, aucun compte à rebours, aucun message de réapparition).
+
+# Bloc posé quand un niveau ne tire aucun loot valide (config incomplète/erreur).
+filler-block: STONE
+
+# ============================================
+#   WorldBorder par île
+# ============================================
+# Chaque joueur a sa propre bordure de monde (visible seulement par lui),
+# centrée sur son île.
+border:
+  # Taille de départ (diamètre en blocs) de la bordure
+  default-size: 50
+  # Nombre de blocs ajoutés à chaque agrandissement (/ob agrandir)
+  expand-amount: 10
+  # Taille maximum atteignable (-1 = illimité)
+  max-size: -1
+  # Coût en argent (Vault/Essentials Economy) pour un agrandissement
+  expand-cost: 500
+  # Distance d'avertissement (le voile rouge/orange qui prévient avant la bordure)
+  warning-distance: 3
+
+# Messages liés à la bordure / à l'économie (nécessite Vault + un plugin
+# d'économie comme EssentialsX)
+border-expand-success: "&a✔ Île agrandie ! Nouvelle taille : &e{size} blocs&a (coût : &e{cost}$&a)"
+border-expand-max: "&cTa bordure a déjà atteint la taille maximum (&e{max} blocs&c)."
+border-expand-no-money: "&cIl te faut &e{cost}$ &cpour agrandir ton île (tu as &e{balance}$&c)."
+border-no-economy: "&cAucun plugin d'économie (Vault) n'est installé, impossible d'agrandir l'île."
+
+# ============================================
+#   Caisse d'île (banque IS / /bankis)
+# ============================================
+# Chaque île a sa propre "caisse", un montant d'argent virtuel séparé du
+# compte personnel du joueur (Vault). Elle se remplit automatiquement à
+# chaque montée de niveau du OneBlock, et peut ensuite être gérée avec
+# /bankis (dépôt/retrait vers le compte perso). Fonctionne même sans Vault
+# installé (la caisse se remplit quand même), mais les dépôts/retraits
+# nécessitent un plugin d'économie (EssentialsX par exemple).
+bank:
+  # Argent gagné dans la caisse d'île à chaque montée de niveau du OneBlock.
+  # Le montant réel versé = levelup-base-reward * numéro du niveau atteint.
+  # Ex: base 30 -> niveau 2 = 60$, niveau 5 = 150$, niveau 9 = 270$...
+  levelup-base-reward: 30
+  levelup-message: "&a+{amount}$ &7dans la caisse d'île ! &8(niveau {level})"
+
+# ============================================
+#   Renaissance (prestige) : /ob renaissance
+# ============================================
+# Ce système, ainsi que la boutique de renaissance (/rebirthshop), sont
+# désormais configurés dans le fichier séparé "rebirth.yml" (même dossier
+# que ce config.yml). Modifie ce fichier pour ajuster la renaissance.
+
+# ============================================
+#   Classements : /top
+# ============================================
+top:
+  # Nombre de joueurs affichés par catégorie avec /top <catégorie>
+  # (l'aperçu /top sans argument affiche toujours un top 5 par catégorie)
+  size: 10
+
+# ============================================
+#   Boutique à tokens : /token
+# ============================================
+# Cette boutique est désormais configurée dans le fichier séparé
+# "token.yml" (même dossier que ce config.yml). Modifie ce fichier pour
+# ajuster les prix et articles de la boutique à tokens.
+
+# ============================================
+#   Améliorations d'île (argent) : /upgrades
+# ============================================
+# Boutique d'améliorations d'île payées avec l'ARGENT PERSONNEL du joueur
+# (compte Vault, comme /ob agrandir). Chaque amélioration a plusieurs
+# niveaux ; le prix du niveau suivant = base-cost * cost-multiplier^niveau
+# actuel (donc de plus en plus cher). L'effet appliqué à chaque niveau =
+# niveau * bonus-per-level.
+#
+# Clés reconnues par le plugin (effet réellement appliqué en jeu) :
+#   - bank-boost : augmente (en %) l'argent versé dans la caisse d'île à
+#     chaque montée de niveau ET à chaque renaissance.
+#   - loot-boost : chance (en %) d'obtenir le bloc cassé en double.
+# D'autres clés peuvent être ajoutées ici (elles apparaîtront dans le GUI
+# et seront achetables), mais nécessitent d'ajouter leur effet dans le code
+# (OneBlockManager) pour avoir un impact en jeu.
+upgrades:
+  bank-boost:
+    name: "Bonus Caisse d'île"
+    description: "Augmente l'argent gagné dans la caisse d'île à chaque montée de niveau et renaissance."
+    icon: GOLD_INGOT
+    max-level: 10
+    base-cost: 2300
+    cost-multiplier: 1.8
+    bonus-per-level: 10.0   # % de bonus par niveau (niveau 10 = +100%, soit x2 au total)
+  loot-boost:
+    name: "Bonus de Loot"
+    description: "Chance d'obtenir le bloc du OneBlock en double à chaque casse."
+    icon: CHEST
+    max-level: 5
+    base-cost: 1725
+    cost-multiplier: 1.8
+    bonus-per-level: 5.0    # % de chance par niveau (niveau 5 = 25% de chance)
+
+# Messages liés à /upgrades
+upgrades-messages:
+  success: "&a✔ &d{name} &aest maintenant niveau &e{level}&a."
+  max-level: "&cCette amélioration est déjà au niveau maximum."
+  no-money: "&cIl te faut &e{cost}$ &cpour ce niveau &7(tu as &e{balance}$&c)."
+  no-economy: "&cAucun plugin d'économie (Vault) n'est installé, impossible d'acheter des améliorations."
+
+# ============================================
+#   Paramètres par île (façon "gamerule" mais limités à la zone de l'île)
+# ============================================
+# Ces réglages ne s'appliquent QUE dans la bordure de l'île du joueur
+# (pas sur le reste du monde). Modifiables en jeu avec /ob settings <clé> <true|false>
+# ou via le GUI /ob settings.
+#
+# IMPORTANT : "keep-inventory" est volontairement EXCLU du GUI et de la
+# commande /ob settings : ce n'est PAS un réglage par île modifiable par les
+# joueurs. C'est un choix global fixé ici par l'admin du serveur (identique
+# pour tout le monde, sur l'overworld). Si tu veux l'activer pour tout le
+# serveur, mets-le à true ci-dessous.
+# EXCEPTION : dans le Nether de chaque île, le keep-inventory est TOUJOURS
+# actif (forcé), quelle que soit la valeur ci-dessous — impossible à
+# désactiver dans le Nether (voir IslandSettingsListener#onDeath).
+default-settings:
+  mob-spawning: true          # apparition naturelle des mobs hostiles
+  # animal-spawning : supprimé, les animaux/mobs passifs liés au biome
+  # spawnent maintenant toujours et ne sont plus désactivables (voir
+  # IslandSettingsListener#onCreatureSpawn)
+  pvp: true                   # combat entre joueurs
+  monster-damage: true        # dégâts infligés par les mobs hostiles aux joueurs
+  fire-spread: true           # propagation et dégâts du feu (blocs)
+  fire-damage: true           # dégâts de feu/lave subis par le joueur
+  explosions: true            # dégâts de blocs causés par TNT/creepers
+  mob-griefing: true          # endermen qui prennent des blocs, creepers qui cassent, etc.
+  keep-inventory: true        # garder l'inventaire après la mort (NON modifiable en jeu, voir ci-dessus)
+  fall-damage: true           # dégâts de chute
+  drown-damage: true          # dégâts de noyade
+  void-damage: true           # dégâts si le joueur tombe dans le vide
+  suffocation-damage: true    # dégâts d'étouffement (dans un bloc)
+  freeze-damage: true         # dégâts de gel (poudreuse)
+  cactus-damage: true         # dégâts de cactus
+  lightning-damage: true      # dégâts de foudre
+  hunger-loss: true           # la faim diminue avec le temps
+  natural-regeneration: true  # régénération de vie automatique (faim pleine)
+  crop-trample: true          # marcher sur une culture (farmland) la piétine
+  mob-drops: true             # butin lâché par les mobs tués
+  xp-drop: true                # expérience lâchée par les mobs tués
+  potion-splash: true          # effets des potions de zone (splash/lingering)
+  villager-trading: true       # commerce avec les villageois/marchands
+  bucket-use: true             # remplir/vider des seaux (eau, lave...)
+  build: true                   # placer des blocs sur l'île
+  block-break-other: true       # casser des blocs autres que le OneBlock (constructions)
+  bow-shooting: true            # tirer à l'arc/à l'arbalète
+  entity-mount: true            # monter sur une monture/un bateau
+  always-day: false             # bloque l'heure en plein jour pour ce joueur
+  fly: false                    # vol autorisé sur l'île
+  border-particles: false       # cache le mur vanilla de la bordure, remplacé par des particules rouges à hauteur du joueur
+
+settings-names:
+  mob-spawning: "Mobs hostiles"
+  pvp: "PVP"
+  monster-damage: "Dégâts des monstres"
+  fire-spread: "Propagation du feu"
+  fire-damage: "Dégâts de feu/lave"
+  explosions: "Explosions"
+  mob-griefing: "Mob Griefing"
+  keep-inventory: "Garder l'inventaire"
+  fall-damage: "Dégâts de chute"
+  drown-damage: "Dégâts de noyade"
+  void-damage: "Dégâts du vide"
+  suffocation-damage: "Dégâts d'étouffement"
+  freeze-damage: "Dégâts de gel"
+  cactus-damage: "Dégâts de cactus"
+  lightning-damage: "Dégâts de foudre"
+  hunger-loss: "Perte de faim"
+  natural-regeneration: "Régénération naturelle"
+  crop-trample: "Piétinement des cultures"
+  mob-drops: "Butin des mobs"
+  xp-drop: "Gain d'expérience"
+  potion-splash: "Potions de zone"
+  villager-trading: "Commerce villageois"
+  bucket-use: "Utilisation des seaux"
+  build: "Construction (placer)"
+  block-break-other: "Casser (hors OneBlock)"
+  bow-shooting: "Tir à l'arc"
+  entity-mount: "Montures"
+  always-day: "Jour permanent"
+  fly: "Vol"
+  border-particles: "Bordure en particules"
+
+# Affiche une BossBar en haut de l'écran avec le niveau actuel et la
+# progression (blocs cassés / blocs nécessaires pour le niveau suivant)
+bossbar-enabled: true
+
+# Message envoyé quand le joueur passe un niveau
+levelup-message: "&6&l✦ Niveau supérieur ! &eTu es maintenant niveau {level} (&b{name}&e)"
+
+# ============================================
+#   Coffres bonus (loot commun, jamais d'objet rare)
+# ============================================
+# À chaque régénération du bloc OneBlock, il y a une chance (en %) qu'un
+# COFFRE apparaisse à la place du bloc/spawner normalement tiré par le
+# niveau en cours. Ce coffre contient uniquement du loot commun (pousses,
+# bâtons, bois, nourriture basique...) : JAMAIS d'objet rare (minerai
+# précieux, spawner...). C'est un simple petit bonus de variété.
+chest-loot:
+  enabled: true
+  # Chance (en %) à chaque régénération du bloc
+  chance: 3.0
+  # Nombre d'emplacements remplis dans le coffre (tiré aléatoirement)
+  slots:
+    min: 1
+    max: 3
+  # Liste pondérée des objets pouvant apparaître dans le coffre.
+  # weight : poids relatif (plus c'est haut, plus c'est fréquent)
+  # amount.min / amount.max : quantité tirée pour cet emplacement
+  items:
+    - material: OAK_SAPLING
+      weight: 10
+      amount: { min: 1, max: 3 }
+    - material: STICK
+      weight: 10
+      amount: { min: 2, max: 6 }
+    - material: OAK_LOG
+      weight: 8
+      amount: { min: 1, max: 4 }
+    - material: COBBLESTONE
+      weight: 8
+      amount: { min: 2, max: 6 }
+    - material: APPLE
+      weight: 6
+      amount: { min: 1, max: 2 }
+    - material: BREAD
+      weight: 6
+      amount: { min: 1, max: 2 }
+    - material: STRING
+      weight: 5
+      amount: { min: 1, max: 3 }
+    - material: FEATHER
+      weight: 5
+      amount: { min: 1, max: 2 }
+    - material: FLINT
+      weight: 5
+      amount: { min: 1, max: 2 }
+    - material: OAK_PLANKS
+      weight: 6
+      amount: { min: 2, max: 6 }
+
+# ============================================
+#   Définition des niveaux (phases)
+# ============================================
+# min-blocks / max-blocks : nombre de blocs cassés total pour être dans ce niveau
+#   (max-blocks: -1 = pas de limite, dernier niveau "infini")
+# loot : liste pondérée de blocs / spawners pouvant apparaître
+#   type: SPAWNER pour un spawner de mob, sinon un Material Bukkit classique
+#   weight : poids relatif (plus c'est haut, plus c'est fréquent)
+#   entity (uniquement pour SPAWNER) : type de mob du spawner
+
+levels:
+  1:
+    name: "Plaine"
+    min-blocks: 0
+    max-blocks: 164
+    # Séquence garantie : les tout premiers blocs ne sont PAS tirés au sort,
+    # ils sont donnés dans cet ordre exact, sans aucun aléatoire. Ainsi tous
+    # les joueurs ont à coup sûr du bois (pour crafter table/outils) puis de
+    # la pierre (pour les outils en pierre) dès le début, sans dépendre de la
+    # chance ni avoir besoin d'acheter quoi que ce soit dans une boutique.
+    # Une fois cette liste épuisée (à partir du 11e bloc cassé), le loot
+    # habituel ci-dessous (aléatoire pondéré) reprend normalement.
+    sequence:
+      - OAK_LOG
+      - OAK_LOG
+      - OAK_LOG
+      - OAK_LOG
+      - OAK_LOG
+      - OAK_LOG
+      - STONE
+      - STONE
+      - STONE
+      - STONE
+    loot:
+      - material: DIRT
+        weight: 30
+      - material: GRASS_BLOCK
+        weight: 18
+      - material: STONE
+        weight: 15
+      - material: OAK_LOG
+        weight: 10
+      - material: OAK_LEAVES
+        weight: 8
+      - material: GRAVEL
+        weight: 6
+      - material: POPPY
+        weight: 4
+      - material: DANDELION
+        weight: 4
+      - material: COAL_ORE
+        weight: 4
+      - material: CLAY
+        weight: 1
+
+  2:
+    name: "Forêt & Taïga"
+    min-blocks: 165
+    max-blocks: 411
+    loot:
+      - material: OAK_LOG
+        weight: 16
+      - material: BIRCH_LOG
+        weight: 12
+      - material: SPRUCE_LOG
+        weight: 10
+      - material: OAK_LEAVES
+        weight: 12
+      - material: BIRCH_LEAVES
+        weight: 8
+      - material: SPRUCE_LEAVES
+        weight: 8
+      - material: MOSS_BLOCK
+        weight: 6
+      - material: PODZOL
+        weight: 5
+      - material: RED_MUSHROOM_BLOCK
+        weight: 4
+      - material: BROWN_MUSHROOM_BLOCK
+        weight: 4
+      - material: HONEY_BLOCK
+        weight: 2
+      - material: COAL_ORE
+        weight: 9
+
+  3:
+    name: "Désert & Savane"
+    min-blocks: 412
+    max-blocks: 659
+    loot:
+      - material: SAND
+        weight: 18
+      - material: RED_SAND
+        weight: 8
+      - material: SANDSTONE
+        weight: 14
+      - material: TERRACOTTA
+        weight: 8
+      - material: ORANGE_TERRACOTTA
+        weight: 6
+      - material: ACACIA_LOG
+        weight: 10
+      - material: CACTUS
+        weight: 8
+      - material: DEAD_BUSH
+        weight: 5
+      - material: SUGAR_CANE
+        weight: 4
+      - material: GOLD_ORE
+        weight: 10
+
+  4:
+    name: "Océan & Plage"
+    min-blocks: 660
+    max-blocks: 906
+    loot:
+      - material: PRISMARINE
+        weight: 16
+      - material: PRISMARINE_BRICKS
+        weight: 8
+      - material: DARK_PRISMARINE
+        weight: 6
+      - material: SEA_LANTERN
+        weight: 8
+      - material: KELP
+        weight: 10
+      - material: SAND
+        weight: 10
+      - material: SPONGE
+        weight: 4
+      - material: TUBE_CORAL_BLOCK
+        weight: 6
+      - material: BRAIN_CORAL_BLOCK
+        weight: 6
+      - material: MAGMA_BLOCK
+        weight: 4
+      - material: GOLD_ORE
+        weight: 8
+
+  5:
+    name: "Caverne"
+    min-blocks: 907
+    max-blocks: 1319
+    loot:
+      - material: STONE
+        weight: 18
+      - material: COBBLESTONE
+        weight: 16
+      - material: ANDESITE
+        weight: 8
+      - material: DIORITE
+        weight: 8
+      - material: GRANITE
+        weight: 8
+      - material: COPPER_ORE
+        weight: 10
+      - material: COAL_ORE
+        weight: 12
+      - material: IRON_ORE
+        weight: 10
+      - material: GOLD_ORE
+        weight: 4
+
+  6:
+    name: "Mine Profonde & Grotte Givrée"
+    min-blocks: 1320
+    max-blocks: 1814
+    loot:
+      - material: DEEPSLATE
+        weight: 14
+      - material: IRON_ORE
+        weight: 14
+      - material: GOLD_ORE
+        weight: 10
+      - material: LAPIS_ORE
+        weight: 8
+      - material: REDSTONE_ORE
+        weight: 8
+      - material: DIAMOND_ORE
+        weight: 6
+      - material: EMERALD_ORE
+        weight: 4
+      - material: OBSIDIAN
+        weight: 6
+      - material: PACKED_ICE
+        weight: 8
+      - material: BLUE_ICE
+        weight: 6
+      - material: SNOW_BLOCK
+        weight: 4
+
+  7:
+    name: "Néther"
+    min-blocks: 1815
+    max-blocks: 2309
+    loot:
+      - material: NETHERRACK
+        weight: 16
+      - material: NETHER_GOLD_ORE
+        weight: 10
+      - material: NETHER_QUARTZ_ORE
+        weight: 10
+      - material: BLACKSTONE
+        weight: 10
+      - material: BASALT
+        weight: 8
+      - material: MAGMA_BLOCK
+        weight: 6
+      - material: GLOWSTONE
+        weight: 8
+      - material: SOUL_SAND
+        weight: 7
+      - material: SOUL_SOIL
+        weight: 5
+      - material: CRIMSON_NYLIUM
+        weight: 5
+      - material: WARPED_NYLIUM
+        weight: 5
+      - material: ANCIENT_DEBRIS
+        weight: 3
+
+  8:
+    name: "Fin du Monde"
+    min-blocks: 2310
+    max-blocks: 2804
+    loot:
+      - material: END_STONE
+        weight: 20
+      - material: END_STONE_BRICKS
+        weight: 10
+      - material: PURPUR_BLOCK
+        weight: 12
+      - material: PURPUR_PILLAR
+        weight: 8
+      - material: OBSIDIAN
+        weight: 8
+      - material: CRYING_OBSIDIAN
+        weight: 4
+      - material: CHORUS_PLANT
+        weight: 8
+      - material: CHORUS_FLOWER
+        weight: 4
+      - material: DIAMOND_ORE
+        weight: 6
+
+  9:
+    name: "Mélange Ultime"
+    min-blocks: 2805
+    max-blocks: -1
+    # Dernier niveau : un mélange de blocs représentatifs de TOUS les biomes
+    # précédents (plaine, forêt, désert, océan, caverne, mine, néther, end)
+    # pour un maximum de diversité, avec en plus les blocs les plus rares.
+    loot:
+      - material: OAK_LOG
+        weight: 6
+      - material: STONE
+        weight: 6
+      - material: SAND
+        weight: 5
+      - material: PRISMARINE
+        weight: 5
+      - material: DEEPSLATE
+        weight: 5
+      - material: NETHERRACK
+        weight: 5
+      - material: END_STONE
+        weight: 5
+      - material: ICE
+        weight: 4
+      - material: IRON_ORE
+        weight: 8
+      - material: GOLD_ORE
+        weight: 7
+      - material: COPPER_ORE
+        weight: 5
+      - material: LAPIS_ORE
+        weight: 5
+      - material: REDSTONE_ORE
+        weight: 5
+      - material: DIAMOND_ORE
+        weight: 6
+      - material: EMERALD_ORE
+        weight: 5
+      - material: OBSIDIAN
+        weight: 5
+      - material: GLOWSTONE
+        weight: 4
+      - material: SEA_LANTERN
+        weight: 4
+      - material: PURPUR_BLOCK
+        weight: 4
+      - material: CHORUS_PLANT
+        weight: 3
+      - material: ANCIENT_DEBRIS
+        weight: 2
+
+# ============================================
+#   Questions bonus dans le chat (/sendquestion)
+# ============================================
+# Pose automatiquement une question (calcul mental facile/moyen/difficile, ou
+# capitale <-> pays) dans le chat public toutes les "interval-minutes"
+# minutes. Le premier joueur à répondre juste dans le chat gagne de l'argent
+# (via Vault) : le gain dépend de la difficulté ET de la rapidité de la
+# réponse, borné entre min-reward et max-reward.
+# LeGameurPSN_YT (ou un op) peut forcer une question en avance avec /sendquestion.
+trivia:
+  enabled: true
+  interval-minutes: 9
+  min-reward: 1
+  max-reward: 5000
+  # Nombre de dernières questions mémorisées pour éviter qu'une même question ne retombe deux fois de suite
+  anti-repeat-count: 15
+  # Si true, une mauvaise réponse (message pendant une question active qui ne correspond pas) casse la série
+  track-wrong-answers: true
+  # Bonus de gain par bonne réponse d'affilée (en %), plafonné par streak-bonus-max-percent
+  streak-bonus-percent: 5
+  streak-bonus-max-percent: 50
+
+# ============================================
+#   Bornes de la commande /eco (admin)
+# ============================================
+eco:
+  min-amount: 1
+  max-amount: 5000
